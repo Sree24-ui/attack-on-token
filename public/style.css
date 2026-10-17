@@ -23,12 +23,12 @@ header, main { max-width: 760px; margin: 0 auto; padding: 0 16px; }
 header { padding-top: 32px; text-align: center; }
 h1, h2 { font-family: Bungee, Impact, sans-serif; font-weight: 400; margin: 0 0 8px; }
 h1 { font-size: clamp(2rem, 8vw, 3.5rem); letter-spacing: 1px; }
-h1 span { color: var(--gold); text-shadow: 0 0 24px #ffd40066; }
+h1 span { color: var(--gold); }
 .tagline { color: var(--muted); margin: 0 0 20px; }
 
 .hud { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; font-size: .9rem; }
 .progress { flex: 1 1 200px; height: 10px; background: var(--line); border-radius: 99px; overflow: hidden; }
-#bar { height: 100%; width: 12%; background: linear-gradient(90deg, var(--gold), var(--red)); transition: width .8s cubic-bezier(.6, -0.5, .3, 1.6); }
+#bar { height: 100%; transform: scaleX(.12); transform-origin: left; background: linear-gradient(90deg, var(--gold), var(--red)); transition: transform .8s cubic-bezier(.6, -0.5, .3, 1.6); }
 .rage { color: var(--red); font-family: Bungee, sans-serif; }
 .rage.bump { animation: bump .3s; }
 @keyframes bump { 50% { transform: scale(1.4); } }

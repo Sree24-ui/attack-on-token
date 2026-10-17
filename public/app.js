@@ -28,7 +28,7 @@ const PROGRESS = [['Loading regret…', 12], ['Almost there!', 87], ['Recalculat
 function show(stage, idx) {
   document.querySelectorAll('.stage').forEach(s => (s.hidden = s.id !== stage));
   const [label, pct] = PROGRESS[idx];
-  $('bar').style.width = pct + '%';
+  $('bar').style.transform = `scaleX(${pct / 100})`;
   $('progressText').textContent = `${label} ${pct}%`;
   $(stage).querySelector('input, button')?.focus();
 }
