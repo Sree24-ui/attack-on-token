@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Attack on Token</title>
+  <meta name="description" content="Defeat the Token Titan. Lose your patience. Win one (1) token.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪙</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Attack on <span>Token</span></h1>
+    <p class="tagline">One token. One Titan. Zero chance.</p>
+    <div class="hud">
+      <div class="progress" role="progressbar" aria-label="Progress (allegedly)" aria-valuemin="0" aria-valuemax="100"><div id="bar"></div></div>
+      <span id="progressText">Loading regret… 12%</span>
+      <span class="rage">RAGE <b id="rage">0</b></span>
+    </div>
+  </header>
+
+  <main>
+    <!-- Stage 0: cookie wall -->
+    <section class="stage" id="stage-cookies">
+      <h2>🍪 We value your privacy*</h2>
+      <p>We and our 1,847 partners would like to store 9,437 cookies on your device, your fridge, and your aunt's iPad.</p>
+      <p class="fine">*We do not value your privacy.</p>
+      <div class="cookie-actions">
+        <button class="big" id="acceptCookies">Accept all and also some extra</button>
+        <button class="tiny" id="rejectCookies">reject</button>
+      </div>
+    </section>
+
+    <!-- Stage 1: password -->
+    <section class="stage" id="stage-signup" hidden>
+      <h2>Create your Titan-Approved™ account</h2>
+      <form id="signupForm" autocomplete="off">
+        <label>Username <input id="username" required maxlength="24"></label>
+        <label>Password <input id="password" required></label>
+        <ul id="rules" aria-live="polite"></ul>
+        <button class="big" id="signupBtn" disabled>Create account</button>
+        <p class="error" id="signupError" role="alert"></p>
+      </form>
+    </section>
+
+    <!-- Stage 2: captcha -->
+    <section class="stage" id="stage-captcha" hidden>
+      <h2>Prove you are not a robot</h2>
+      <p>Select all squares containing a <b>token</b>.</p>
+      <div id="grid" class="grid"></div>
+      <button class="big" id="verifyBtn">Verify</button>
+      <p class="error" id="captchaError" role="alert"></p>
+    </section>
+
+    <!-- Stage 3: the Titan -->
+    <section class="stage" id="stage-titan" hidden>
+      <div class="titan">
+        <div class="titan-face" id="titanFace" aria-hidden="true">😏</div>
+        <div>
+          <h2>TOKEN TITAN</h2>
+          <p class="fine">Guardian of the last token. Has never lost an argument. Has never been in one either.</p>
+        </div>
+      </div>
+      <div id="chat" class="chat" aria-live="polite"></div>
+      <form id="chatForm" class="chat-form">
+        <input id="chatInput" maxlength="500" placeholder="Beg, bargain, or flatter…" required aria-label="Message the Titan">
+        <button class="big" id="sendBtn">Send</button>
+      </form>
+    </section>
+
+    <!-- Stage 4: victory -->
+    <section class="stage" id="stage-win" hidden>
+      <div class="token">🪙</div>
+      <h2>You got the token.</h2>
+      <p id="winStats"></p>
+      <p class="fine">Estimated market value: $0.000003. Non-refundable. Non-spendable. Non-anything.</p>
+      <form id="shameForm" class="chat-form">
+        <input id="shameName" maxlength="24" placeholder="Name for the Hall of Shame" required aria-label="Your name">
+        <button class="big" id="shameBtn">Immortalize me</button>
+      </form>
+      <button class="tiny again" id="againBtn" type="button">suffer again</button>
+    </section>
+
+    <section class="shame">
+      <h2>🏆 Hall of Shame</h2>
+      <p id="totals" class="fine"></p>
+      <table>
+        <thead><tr><th>#</th><th>Victim</th><th>Rage</th><th>Time wasted</th><th>Msgs</th></tr></thead>
+        <tbody id="board"><tr><td colspan="5">Loading…</td></tr></tbody>
+      </table>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" type="module"></script>
+</body>
+</html>

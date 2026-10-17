@@ -1,0 +1,13 @@
+{
+  "name": "attack-on-token",
+  "version": "1.0.0",
+  "description": "A rage-bait website where you must out-argue a smug AI Titan to win one worthless token.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test.js"
+  },
+  "engines": { "node": ">=24.2" },
+  "license": "MIT"
+}
