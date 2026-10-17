@@ -8,11 +8,11 @@
   --primary: #4f46e5;
   --primary-hover: #4338ca;
   --primary-soft: #eef2ff;
-  --danger: #d92d20;
+  --danger: #b42318;
   --danger-soft: #fef3f2;
-  --success: #079455;
+  --success: #067647;
   --success-soft: #ecfdf3;
-  --warning: #dc6803;
+  --warning: #b54708;
   --radius: 10px;
   --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .08);
   --shadow-lg: 0 12px 24px -4px rgba(16, 24, 40, .12), 0 4px 8px -2px rgba(16, 24, 40, .06);
@@ -32,7 +32,7 @@ body {
 h1, h2, h3 { margin: 0; line-height: 1.25; letter-spacing: -.01em; }
 h1 { font-size: 24px; font-weight: 600; }
 h2 { font-size: 16px; font-weight: 600; }
-h3 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+h3, .modal h2 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
 p { margin: 0; }
 a { color: var(--primary); }
 .muted { color: var(--muted); }

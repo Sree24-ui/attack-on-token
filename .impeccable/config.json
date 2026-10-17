@@ -8,6 +8,12 @@
         "value": "cubic-bezier(.6, -0.5, .3, 1.6)",
         "createdAt": "2026-10-17T05:58:12.865Z",
         "reason": "Claude: deliberate rage-bait gag - the lying progress bar overshoots and snaps back"
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-10-17T06:14:40.994Z",
+        "reason": "Claude: brief demands a convincing generic enterprise SaaS portal; Inter is the genre-native face and the blandness is part of the joke"
       }
     ]
   }
