@@ -2,6 +2,8 @@
 
 > A polished enterprise portal that slowly, deliberately ruins your day.
 
+**Live demo:** https://attack-on-token.onrender.com (free tier: the first visit may take about a minute to wake up)
+
 **Titan Cloud** looks like a serious SaaS product for "token governance". Underneath, it's a rage-bait gauntlet. You fight a login portal built to fail you, then try to withdraw your organization's single token, which is guarded by **TOKEN TITAN**, a smug AI access reviewer. Every frustration is counted, and the people who make it through are honored in the **Hall of Shame**.
 
 The joke is the contrast: the interface looks trustworthy, and every interaction betrays it.
