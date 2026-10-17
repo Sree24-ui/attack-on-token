@@ -1,72 +1,116 @@
 # 🪙 Attack on Token
 
-> One token. One Titan. Zero chance.
+> A polished enterprise portal that slowly, deliberately ruins your day.
 
-A rage-bait website where you claw past the web's most hated dark patterns and then have to **out-argue a smug AI giant** to win a single worthless token. Your suffering is saved forever in the **Hall of Shame**.
+**Titan Cloud** looks like a serious SaaS product for "token governance". Underneath, it's a rage-bait gauntlet. You fight a login portal built to fail you, then try to withdraw your organization's single token, which is guarded by **TOKEN TITAN**, a smug AI access reviewer. Every frustration is counted, and the people who make it through are honored in the **Hall of Shame**.
 
-![Password stage](docs/password.png)
+The joke is the contrast: the interface looks trustworthy, and every interaction betrays it.
 
-## The gauntlet
+![Login portal](docs/login.png)
 
-| Stage | What makes you angry |
-|---|---|
-| 🍪 **Cookie wall** | The "reject" button runs away from your cursor. If you do catch it, it accepts all cookies anyway. |
-| 🔐 **Sign-up** | Password rules show up one at a time: digits that add to 13, a month, "titan" backwards, an emoji, a prime length… Then your username is "already taken". By you. |
-| 🤖 **CAPTCHA** | "Select all tokens." Your first try is always wrong, and the grid reshuffles after every miss. |
-| 😏 **Token Titan** | An AI villain who roasts every argument you make, cites fake "Token Law", and only gives in to real wit (or persistence). |
-| 🏆 **Victory** | You get one token, worth $0.000003. Put your name in the Hall of Shame. |
+## Two-page architecture
 
-Running gags: a **rage meter** that goes up with every annoyance, a **progress bar that lies** (87% → 34% → 99%), a **rage-click detector**, and a Titan who types slowly on purpose.
+The whole site is **exactly two pages**. Everything else lives in tabs, modals, popovers, drawers and expandable sections on those pages.
 
-![Victory](docs/victory.png)
+| Route | Page | What happens there |
+|---|---|---|
+| `/` | **Login portal** (`public/index.html`) | Sign-in and Create-account tabs, forgot-password popover, cookie consent bar, terms panel, provisioning modal |
+| `/dashboard` | **Main dashboard** (`public/dashboard.html`) | Sidebar tabs (Overview, Token Vault, Titan Assistant, Hall of Shame, Settings), CAPTCHA modal, victory modal, notifications and account popovers, search popover, mobile nav drawer |
+
+The server's `PAGES` map is the only way to reach a page. Direct `*.html` requests and every other path return 404, and `npm test` enforces this (see below). Opening `/dashboard` without a session sends you back to `/`.
+
+## The rage-bait mechanics
+
+**Login portal**
+- **Cookie consent:** the "Reject" link runs away from your cursor. If you catch it, it accepts every cookie anyway.
+- **Dodging sign-in button:** it slides away the first four times you go for it.
+- **Sign-in never works:** first "Incorrect password", then "No workspace found". You *must* create an account.
+- **Forgot password:** "We emailed a reset link to an email address. Not necessarily yours."
+- **SSO:** "Your administrator is the Titan. The Titan says no."
+- **Escalating password rules:** they appear one at a time. Digits must add up to 13, include a month, include "titan" backwards, include an emoji, and the length must be prime.
+- **Lying strength meter:** the better your password, the *weaker* it says it is.
+- **Show password:** reveals it for 1.5 seconds.
+- **Terms checkbox:** unchecks itself the first time and makes you review the Terms.
+- **Username "already taken":** by you.
+- **Provisioning progress:** 12% → 87% → 34% → 99%… → done.
+
+**Dashboard**
+- **Looks legitimate:** KPI cards, an activity feed, a withdrawal-requests chart (thousands requested, zero approved), plan usage.
+- **Withdraw token → CAPTCHA modal:** "select all tokens" among look-alike coins. Your first try always fails, and the grid reshuffles after every miss.
+- **Titan Assistant:** the AI roasts every argument you make. It can't give in before your 4th message and always gives in at your 12th.
+- **Victory modal:** a spinning token, your stats, and a pre-filled name for the Hall of Shame.
+- **Hall of Shame:** a leaderboard stored in SQLite, ranked by rage.
+- **Small cruelties:** notifications come back 5 s after "Mark all read". Settings toggles switch themselves back off ("The Titan prefers zero-factor authentication"). "Upgrade plan" costs one token. Search results are "a premium feature". "Clear" on the activity log adds an entry that can't be cleared.
+- **On both pages:** a **frustration index** (rage meter) and a **rage-click detector** (3 clicks within 700 ms). Session state carries from the login page to the dashboard through `sessionStorage`.
+
+![Dashboard](docs/dashboard.png)
 
 ## Run it
 
-Needs **Node.js 24.2+**. There are **zero dependencies**: `node:http` serves the app and `node:sqlite` stores the data.
+Requires **Node.js 24.2+**. There are **no dependencies to install**: `node:http` serves the app and `node:sqlite` stores the data.
 
 ```bash
-npm start            # http://localhost:3000
-npm test             # unit + HTTP end-to-end tests
+npm start     # http://localhost:3000
+npm test      # unit, API, and two-page-constraint tests
 ```
 
-### Turn on the real AI Titan (optional)
+### AI: live Claude or scripted fallback
 
 ```bash
 ANTHROPIC_API_KEY=sk-ant-... npm start
 ```
 
-With a key, the Titan runs on Claude (`claude-haiku-5-5` by default; override with `TITAN_MODEL`). Without one, or if the API call fails, it falls back to a scripted Titan, so the demo always works. Hint for the scripted version: manners matter, eventually.
+- **With a key**, the Titan is a live Claude model (`claude-haiku-5-5` by default; override with `TITAN_MODEL`). The top bar shows **AI: Live**.
+- **Without a key**, the Titan uses a clearly labeled **scripted fallback**. The top bar shows **AI: Scripted** and the chat header says "Scripted fallback · no live AI response". Hint: manners eventually work.
+- **Every chat reply includes `source: "claude" | "scripted"`**, and the UI updates per reply. If a live API call fails mid-conversation, the reply is labeled scripted. The app never presents a scripted reply as AI.
 
 | Env var | Default | Purpose |
 |---|---|---|
 | `PORT` | `3000` | HTTP port |
 | `DB_PATH` | `./data.db` | SQLite file (`:memory:` for throwaway) |
-| `ANTHROPIC_API_KEY` | — | Turns on the Claude-powered Titan |
+| `ANTHROPIC_API_KEY` | — | Turns on the live Claude Titan |
 | `TITAN_MODEL` | `claude-haiku-5-5` | Claude model id |
 
-## How it works
+## Project layout
 
 ```
-public/            static frontend (vanilla HTML/CSS/JS, no build step)
-  index.html       all five stages + Hall of Shame
-  app.js           stage flow, rage meter, chat client
-  rules.js         password rules (shared with tests)
-server.js          HTTP server, SQLite persistence, Titan AI
-test.js            node:test suite
+server.js            HTTP server: 2 page routes, JSON API, SQLite, Titan AI + fallback
+public/
+  index.html         Page 1: login portal
+  login.js           login-portal mechanics
+  dashboard.html     Page 2: dashboard
+  dashboard.js       dashboard tabs, CAPTCHA, Titan chat, victory, Hall of Shame
+  common.js          shared session state, rage meter, toasts, rage-click detector
+  rules.js           password rules (shared with tests)
+  style.css          design system for both pages
+test.js              node:test suite
 ```
 
-**API**
+### API
 
-- `POST /api/chat` `{history:[{role,content}]}` → `{reply, surrender}`. Rate-limited to 20 requests/min per IP.
-- `GET /api/leaderboard` → `{top:[…], totals:{runs, seconds}}`
-- `POST /api/runs` `{name, seconds, rage, messages}` → updated leaderboard
+| Method & path | Body → response |
+|---|---|
+| `GET /api/status` | → `{ai: "claude" \| "scripted", model}` |
+| `POST /api/chat` | `{history:[{role,content}]}` → `{reply, surrender, source}`. Rate-limited to 20/min per IP |
+| `GET /api/leaderboard` | → `{top:[…], totals:{runs, seconds}}` |
+| `POST /api/runs` | `{name, seconds, rage, messages}` → updated leaderboard |
 
-The server, not the model, decides the fairness rules. The Titan can't surrender before your 4th message, and it always gives up at your 12th, however stubborn the model is. Every input is validated by length and type, and the frontend renders all text with `textContent`, so nothing is injected as HTML.
+All input is validated by type and length, and all user text is rendered with `textContent`.
+
+## Tests
+
+`npm test` runs 5 tests:
+- the password rules can all be satisfied;
+- the Titan's surrender rules (refuses early, gives in to manners, gives in at the mercy limit);
+- API input validation;
+- a full HTTP round trip: status, chat (`source` is `scripted` without a key), runs, leaderboard;
+- **the two-page constraint**: `public/` holds exactly the HTML files in `PAGES`, every internal link points to one of the two routes, both routes return HTML, and `/index.html`, `/dashboard.html`, `/signup`, `/login`, `/captcha`, `/chat` and `/leaderboard` all return 404.
 
 ## Known limits
 
-- Scores are reported by the client, so a determined cheater can fake a run. It's a Hall of *Shame*; cheating there is its own punishment.
-- The rate limiter lives in memory, so it resets on restart and isn't shared across instances.
+- Scores are reported by the client, so a determined cheater can fake a run.
+- The rate limiter lives in memory: it resets on restart and isn't shared across instances.
+- Session progress is stored per browser tab (`sessionStorage`). That's by design: closing the tab wipes the shame.
 
 ## License
 

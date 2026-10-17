@@ -3,97 +3,103 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Attack on Token</title>
-  <meta name="description" content="Defeat the Token Titan. Lose your patience. Win one (1) token.">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪙</text></svg>">
+  <title>Sign in · Titan Cloud</title>
+  <meta name="description" content="Titan Cloud: enterprise token governance. Attack on Token, a rage-bait hackathon project.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%234f46e5'/><path d='M50 20 78 50 50 80 22 50z' fill='white'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <header>
-    <h1>Attack on <span>Token</span></h1>
-    <p class="tagline">One token. One Titan. Zero chance.</p>
-    <div class="hud">
-      <div class="progress" role="progressbar" aria-label="Progress (allegedly)" aria-valuemin="0" aria-valuemax="100"><div id="bar"></div></div>
-      <span id="progressText">Loading regret… 12%</span>
-      <span class="rage">RAGE <b id="rage">0</b></span>
-    </div>
-  </header>
-
-  <main>
-    <!-- Stage 0: cookie wall -->
-    <section class="stage" id="stage-cookies">
-      <h2>🍪 We value your privacy*</h2>
-      <p>We and our 1,847 partners would like to store 9,437 cookies on your device, your fridge, and your aunt's iPad.</p>
-      <p class="fine">*We do not value your privacy.</p>
-      <div class="cookie-actions">
-        <button class="big" id="acceptCookies">Accept all and also some extra</button>
-        <button class="tiny" id="rejectCookies">reject</button>
+<body class="auth">
+  <div class="auth-shell">
+    <aside class="auth-brand">
+      <div class="logo"><span class="logo-mark" aria-hidden="true"></span>Titan Cloud</div>
+      <div class="brand-copy">
+        <p class="eyebrow">Token Governance Platform</p>
+        <h1>Your organization's most valuable token. Secured forever.</h1>
+        <p>Store, audit and (theoretically) withdraw your token from one secure console, guarded around the clock by an AI access reviewer.</p>
+        <ul class="brand-points">
+          <li>SOC 2 Type II* certified</li>
+          <li>99.999% request-denial uptime</li>
+          <li>AI-powered access reviews</li>
+        </ul>
       </div>
-    </section>
+      <figure class="quote">
+        <blockquote>"We moved our token to Titan Cloud three years ago. Nobody has seen it since. Incredible security."</blockquote>
+        <figcaption>Head of Platform, a Fortune 500 company</figcaption>
+      </figure>
+      <p class="fine">*Type II of what, we can't say.</p>
+    </aside>
 
-    <!-- Stage 1: password -->
-    <section class="stage" id="stage-signup" hidden>
-      <h2>Create your Titan-Approved™ account</h2>
-      <form id="signupForm" autocomplete="off">
-        <label>Username <input id="username" required maxlength="24"></label>
-        <label>Password <input id="password" required></label>
-        <ul id="rules" aria-live="polite"></ul>
-        <button class="big" id="signupBtn" disabled>Create account</button>
-        <p class="error" id="signupError" role="alert"></p>
-      </form>
-    </section>
+    <main class="auth-main">
+      <div class="auth-card">
+        <div class="logo mobile-only"><span class="logo-mark" aria-hidden="true"></span>Titan Cloud</div>
+        <h2 id="authTitle">Welcome back</h2>
+        <p class="muted" id="authSub">Sign in to your workspace to continue.</p>
 
-    <!-- Stage 2: captcha -->
-    <section class="stage" id="stage-captcha" hidden>
-      <h2>Prove you are not a robot</h2>
-      <p>Select all squares containing a <b>token</b>.</p>
-      <div id="grid" class="grid"></div>
-      <button class="big" id="verifyBtn">Verify</button>
-      <p class="error" id="captchaError" role="alert"></p>
-    </section>
-
-    <!-- Stage 3: the Titan -->
-    <section class="stage" id="stage-titan" hidden>
-      <div class="titan">
-        <div class="titan-face" id="titanFace" aria-hidden="true">😏</div>
-        <div>
-          <h2>TOKEN TITAN</h2>
-          <p class="fine">Guardian of the last token. Has never lost an argument. Has never been in one either.</p>
+        <div class="tabs" role="tablist" aria-label="Account">
+          <button type="button" role="tab" id="tabSignin" aria-selected="true" aria-controls="panelSignin">Sign in</button>
+          <button type="button" role="tab" id="tabSignup" aria-selected="false" aria-controls="panelSignup">Create account</button>
         </div>
+
+        <form id="panelSignin" role="tabpanel" aria-labelledby="tabSignin" novalidate>
+          <label class="field"><span>Work email</span><input type="email" id="siEmail" required autocomplete="email" placeholder="you@company.com"></label>
+          <div class="field">
+            <div class="field-row"><label for="siPassword">Password</label><button type="button" class="link" id="forgotBtn" aria-expanded="false" aria-controls="forgotPop">Forgot password?</button></div>
+            <input type="password" id="siPassword" required autocomplete="current-password">
+          </div>
+          <div class="popover-inline" id="forgotPop" hidden>
+            <p><b>Reset link sent.</b> We emailed a password reset link to an email address. Not necessarily yours.</p>
+            <button type="button" class="btn sm" id="forgotClose">Got it</button>
+          </div>
+          <div class="dodge-zone"><button class="btn primary" id="signinBtn">Sign in</button></div>
+          <p class="form-error" id="siError" role="alert"></p>
+          <div class="divider"><span>or</span></div>
+          <button type="button" class="btn block" id="ssoBtn">Continue with SSO</button>
+        </form>
+
+        <form id="panelSignup" role="tabpanel" aria-labelledby="tabSignup" novalidate hidden>
+          <label class="field"><span>Username</span><input id="suUser" required maxlength="24" autocomplete="off" placeholder="jane.doe"></label>
+          <div class="field">
+            <div class="field-row"><label for="suPassword">Password</label><button type="button" class="link" id="suShow">Show</button></div>
+            <input type="password" id="suPassword" required autocomplete="new-password">
+          </div>
+          <div class="strength" aria-live="polite">
+            <div class="meter"><i id="strengthBar"></i></div>
+            <span id="strengthText">Strength: n/a</span>
+          </div>
+          <ul class="rules" id="rules" aria-live="polite"></ul>
+          <label class="check"><input type="checkbox" id="terms"> <span>I agree to the <button type="button" class="link" id="termsBtn" aria-expanded="false" aria-controls="termsPanel">Terms of Service</button></span></label>
+          <div class="terms" id="termsPanel" hidden tabindex="0">
+            <p><b>1. The Token.</b> The Token belongs to the Titan. Any token you withdraw is on loan from the Titan, in perpetuity, revocably.</p>
+            <p><b>2. Cookies.</b> You consent to cookies, past, present and future, including cookies not yet baked.</p>
+            <p><b>3. Feelings.</b> Titan Cloud is not liable for frustration, rage, or the urge to throw your laptop.</p>
+            <p><b>4. Arbitration.</b> Disputes are settled by the Titan, who has already decided.</p>
+          </div>
+          <button class="btn primary block" id="signupBtn">Create account</button>
+          <p class="form-error" id="suError" role="alert"></p>
+        </form>
       </div>
-      <div id="chat" class="chat" aria-live="polite"></div>
-      <form id="chatForm" class="chat-form">
-        <input id="chatInput" maxlength="500" placeholder="Beg, bargain, or flatter…" required aria-label="Message the Titan">
-        <button class="big" id="sendBtn">Send</button>
-      </form>
-    </section>
+      <p class="auth-foot fine">Session frustration index: <b class="rage-num" data-rage>0</b> · <a href="https://github.com/Sree24-ui/attack-on-token">Source</a></p>
+    </main>
+  </div>
 
-    <!-- Stage 4: victory -->
-    <section class="stage" id="stage-win" hidden>
-      <div class="token">🪙</div>
-      <h2>You got the token.</h2>
-      <p id="winStats"></p>
-      <p class="fine">Estimated market value: $0.000003. Non-refundable. Non-spendable. Non-anything.</p>
-      <form id="shameForm" class="chat-form">
-        <input id="shameName" maxlength="24" placeholder="Name for the Hall of Shame" required aria-label="Your name">
-        <button class="big" id="shameBtn">Immortalize me</button>
-      </form>
-      <button class="tiny again" id="againBtn" type="button">suffer again</button>
-    </section>
+  <div class="consent" id="consent" role="region" aria-label="Cookie consent">
+    <p><b>We value your privacy*.</b> We and our 1,847 partners store 9,437 cookies on your device, your fridge and your aunt's iPad. <span class="fine">*We do not.</span></p>
+    <div class="consent-actions">
+      <button type="button" class="btn primary sm" id="acceptCookies">Accept all</button>
+      <button type="button" class="link sm" id="rejectCookies">Reject</button>
+    </div>
+  </div>
 
-    <section class="shame">
-      <h2>🏆 Hall of Shame</h2>
-      <p id="totals" class="fine"></p>
-      <table>
-        <thead><tr><th>#</th><th>Victim</th><th>Rage</th><th>Time wasted</th><th>Msgs</th></tr></thead>
-        <tbody id="board"><tr><td colspan="5">Loading…</td></tr></tbody>
-      </table>
-    </section>
-  </main>
+  <dialog id="provision" class="modal" aria-labelledby="provTitle">
+    <h3 id="provTitle">Provisioning your workspace</h3>
+    <p class="muted">Please don't close this window. Or do. It won't help.</p>
+    <div class="meter lg"><i id="provBar"></i></div>
+    <p id="provText" class="muted">Starting…</p>
+  </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js" type="module"></script>
+  <script src="login.js" type="module"></script>
 </body>
 </html>

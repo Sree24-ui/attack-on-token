@@ -4,6 +4,8 @@ import { DatabaseSync } from 'node:sqlite';
 import { join, extname, normalize, sep } from 'node:path';
 
 const PUBLIC = join(import.meta.dirname, 'public');
+// The whole site is exactly these two pages; everything else is an API or a static asset.
+export const PAGES = { '/': 'index.html', '/dashboard': 'dashboard.html' };
 const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml' };
 const MODEL = process.env.TITAN_MODEL || 'claude-haiku-5-5';
 const MIN_TURNS = 4;    // Titan never surrenders before this many user messages
@@ -45,10 +47,10 @@ const ROASTS = [
 export function fallbackReply(history) {
   const turns = history.filter(m => m.role === 'user').length;
   const last = history.at(-1)?.content ?? '';
-  if (turns >= MERCY_TURNS) return { reply: 'Fine. FINE. Your persistence is legally classified as harassment. Take the token and leave.', surrender: true };
-  if (turns >= 6 && /\b(please|pls|plz)\b/i.test(last)) return { reply: 'You said the magic word. Ugh. Disgusting. Take it before I change my mind.', surrender: true };
+  if (turns >= MERCY_TURNS) return { reply: 'Fine. FINE. Your persistence is legally classified as harassment. Take the token and leave.', surrender: true, source: 'scripted' };
+  if (turns >= 6 && /\b(please|pls|plz)\b/i.test(last)) return { reply: 'You said the magic word. Ugh. Disgusting. Take it before I change my mind.', surrender: true, source: 'scripted' };
   const word = last.split(/\s+/).filter(w => w.length > 3).sort((a, b) => b.length - a.length)[0] ?? 'that';
-  return { reply: ROASTS[(turns - 1) % ROASTS.length].replace('{w}', word.slice(0, 30)), surrender: false };
+  return { reply: ROASTS[(turns - 1) % ROASTS.length].replace('{w}', word.slice(0, 30)), surrender: false, source: 'scripted' };
 }
 
 async function claudeReply(history) {
@@ -63,7 +65,7 @@ async function claudeReply(history) {
   });
   if (!res.ok) throw new Error(`anthropic ${res.status}: ${await res.text()}`);
   const text = (await res.json()).content.filter(b => b.type === 'text').map(b => b.text).join('').trim();
-  return { reply: text.replace('[SURRENDER]', '').trim() || '...', surrender: text.includes('[SURRENDER]') };
+  return { reply: text.replace('[SURRENDER]', '').trim() || '...', surrender: text.includes('[SURRENDER]'), source: 'claude' };
 }
 
 export async function titanReply(history) {
@@ -119,6 +121,7 @@ const send = (res, code, obj) => {
 export const server = http.createServer(async (req, res) => {
   try {
     const { pathname } = new URL(req.url, 'http://localhost');
+    if (req.method === 'GET' && pathname === '/api/status') return send(res, 200, { ai: process.env.ANTHROPIC_API_KEY ? 'claude' : 'scripted', model: process.env.ANTHROPIC_API_KEY ? MODEL : null });
     if (req.method === 'GET' && pathname === '/api/leaderboard') return send(res, 200, leaderboard());
     if (req.method === 'POST' && pathname === '/api/runs') {
       const r = await readJson(req);
@@ -134,7 +137,8 @@ export const server = http.createServer(async (req, res) => {
     }
     if (req.method !== 'GET') return send(res, 404, { error: 'not found' });
 
-    const file = normalize(join(PUBLIC, pathname === '/' ? 'index.html' : pathname));
+    if (pathname.endsWith('.html')) return send(res, 404, { error: 'not found' }); // pages only via PAGES
+    const file = normalize(join(PUBLIC, PAGES[pathname] ?? pathname));
     if (!file.startsWith(PUBLIC + sep)) return send(res, 403, { error: 'forbidden' });
     const data = await readFile(file);
     res.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream' });
