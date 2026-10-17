@@ -71,9 +71,18 @@ ANTHROPIC_API_KEY=sk-ant-... npm start
 | `ANTHROPIC_API_KEY` | — | Turns on the live Claude Titan |
 | `TITAN_MODEL` | `claude-haiku-5-5` | Claude model id |
 
+## Deploy (Render)
+
+`render.yaml` is a Render Blueprint for one web service on the Starter plan, with a 1 GB persistent disk mounted at `/var/data`. The SQLite Hall of Shame lives there, so it survives restarts and redeploys.
+
+1. Open https://dashboard.render.com/blueprint/new?repo=https://github.com/Sree24-ui/attack-on-token
+2. Leave `ANTHROPIC_API_KEY` blank for the scripted Titan, or paste a key for the live one.
+3. Click **Apply**. Every push to `main` redeploys automatically.
+
 ## Project layout
 
 ```
+render.yaml          Render Blueprint (web service + persistent disk)
 server.js            HTTP server: 2 page routes, JSON API, SQLite, Titan AI + fallback
 public/
   index.html         Page 1: login portal
