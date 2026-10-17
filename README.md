@@ -73,7 +73,9 @@ ANTHROPIC_API_KEY=sk-ant-... npm start
 
 ## Deploy (Render)
 
-`render.yaml` is a Render Blueprint for one web service on the Starter plan, with a 1 GB persistent disk mounted at `/var/data`. The SQLite Hall of Shame lives there, so it survives restarts and redeploys.
+`render.yaml` is a Render Blueprint for one web service on Render's **free** plan.
+
+> **Free-plan caveat:** free instances have no persistent disk. The SQLite Hall of Shame resets whenever the service sleeps (after about 15 min idle) or redeploys, and the first visit after a sleep takes about a minute to wake it. For permanent scores, switch to `plan: starter` and add a `disk` mounted at `/var/data` with `DB_PATH=/var/data/data.db` (about $7/mo).
 
 1. Open https://dashboard.render.com/blueprint/new?repo=https://github.com/Sree24-ui/attack-on-token
 2. Leave `ANTHROPIC_API_KEY` blank for the scripted Titan, or paste a key for the live one.
@@ -82,7 +84,7 @@ ANTHROPIC_API_KEY=sk-ant-... npm start
 ## Project layout
 
 ```
-render.yaml          Render Blueprint (web service + persistent disk)
+render.yaml          Render Blueprint (free web service)
 server.js            HTTP server: 2 page routes, JSON API, SQLite, Titan AI + fallback
 public/
   index.html         Page 1: login portal
@@ -119,6 +121,7 @@ All input is validated by type and length, and all user text is rendered with `t
 
 - Scores are reported by the client, so a determined cheater can fake a run.
 - The rate limiter lives in memory: it resets on restart and isn't shared across instances.
+- On Render's free plan the Hall of Shame resets when the instance sleeps or redeploys.
 - Session progress is stored per browser tab (`sessionStorage`). That's by design: closing the tab wipes the shame.
 
 ## License

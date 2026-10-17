@@ -2,18 +2,12 @@ services:
   - type: web
     name: attack-on-token
     runtime: node
-    plan: starter            # disks require a paid instance
+    plan: free
     buildCommand: npm install  # no dependencies; kept for Render's Node build step
     startCommand: npm start
     healthCheckPath: /api/status
-    disk:
-      name: data
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: NODE_VERSION
         value: "24"
-      - key: DB_PATH
-        value: /var/data/data.db
       - key: ANTHROPIC_API_KEY
         sync: false            # optional: leave blank for the scripted Titan
