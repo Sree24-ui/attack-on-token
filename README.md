@@ -57,7 +57,7 @@ The server's `PAGES` map is the only way to reach a page. Direct `*.html` reques
 - **Shaking buttons:** random primary buttons jitter; Verify, Send and Create account tremble on hover.
 - **Tia, the help bubble** on the login page, who keeps coming back.
 
-See [SUBMISSION.md](SUBMISSION.md) for the hackathon write-up and the demo video script.
+See [SUBMISSION.md](SUBMISSION.md) for the hackathon write-up and the demo video script, and [AI_CONVERSATION_LOG.md](AI_CONVERSATION_LOG.md) for the full prompt-and-response log with Claude Code.
 
 ## Roll back
 

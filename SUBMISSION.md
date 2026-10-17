@@ -2,6 +2,7 @@
 
 **Live demo:** https://attack-on-token.onrender.com (free tier: allow about a minute for the first load)
 **Repo:** https://github.com/Sree24-ui/attack-on-token
+**AI conversation log:** [AI_CONVERSATION_LOG.md](AI_CONVERSATION_LOG.md)
 
 ## Pitch
 
