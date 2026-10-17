@@ -47,6 +47,28 @@ The server's `PAGES` map is the only way to reach a page. Direct `*.html` reques
 
 ![Dashboard](docs/dashboard.png)
 
+## Rage pack (v1.1)
+
+- **Popup notifications** every 18 s (dismissing three spawns a notification about dismissing notifications). On phones, one popup at a time.
+- **Blocking alerts:** a session-expiry countdown, an unsaved-changes warning on every 4th sidebar click, and a newsletter nag with confirmshaming decline buttons.
+- **Roach-motel sign-out:** a double-negative confirm, a mandatory survey, then a "$0 → $0" offer. **Reset session** in Settings is the direct way out.
+- **Fake urgency banner** that resets itself and comes back after you dismiss it.
+- **Bad controls:** a slider phone-number input, a random-value volume control, and a "Leave site?" prompt.
+- **Shaking buttons:** random primary buttons jitter; Verify, Send and Create account tremble on hover.
+- **Tia, the help bubble** on the login page, who keeps coming back.
+
+See [SUBMISSION.md](SUBMISSION.md) for the hackathon write-up and the demo video script.
+
+## Roll back
+
+`v1.0-two-page` is a git tag marking the version before the rage pack. To restore it without rewriting history:
+
+```bash
+git revert --no-edit v1.0-two-page..HEAD && git push   # Render redeploys the old version
+```
+
+To undo the rollback later, revert the revert commits (`git log` shows them).
+
 ## Run it
 
 Requires **Node.js 24.2+**. There are **no dependencies to install**: `node:http` serves the app and `node:sqlite` stores the data.
