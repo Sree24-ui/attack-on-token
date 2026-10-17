@@ -69,3 +69,74 @@ document.addEventListener('click', () => {
 });
 
 paintRage(false);
+
+// ---------- popup notifications (non-blocking, stack top-right; max 3, or 1 on phones) ----------
+export function notify({ title, body, actions = [], onDismiss }) {
+  let stack = document.querySelector('.notif-stack');
+  if (!stack) {
+    stack = Object.assign(document.createElement('div'), { className: 'notif-stack' });
+    stack.setAttribute('aria-live', 'polite');
+    document.body.append(stack);
+  }
+  const max = matchMedia('(max-width: 560px)').matches ? 1 : 3; // one at a time on phones
+  while (stack.children.length >= max) stack.firstElementChild.remove();
+  const card = document.createElement('div');
+  card.className = 'notif';
+  const text = document.createElement('div');
+  text.className = 'notif-body';
+  text.append(Object.assign(document.createElement('b'), { textContent: title }), Object.assign(document.createElement('p'), { textContent: body }));
+  const row = document.createElement('div');
+  row.className = 'notif-actions';
+  for (const a of actions) {
+    const b = Object.assign(document.createElement('button'), { type: 'button', className: `btn sm${a.primary ? ' primary' : ''}`, textContent: a.label });
+    b.addEventListener('click', () => { card.remove(); a.run?.(); });
+    row.append(b);
+  }
+  const x = Object.assign(document.createElement('button'), { type: 'button', className: 'notif-x', textContent: '×' });
+  x.setAttribute('aria-label', `Dismiss: ${title}`);
+  x.addEventListener('click', () => { card.remove(); onDismiss?.(); });
+  card.append(text, x);
+  if (actions.length) card.append(row);
+  stack.append(card);
+  return card;
+}
+
+// ---------- blocking "system" alerts: resolves with the chosen button's value ----------
+// Buttons: {label, value, primary, faded, escape}. `escape` marks the option that moves the user along.
+export const dialogOpen = () => !!document.querySelector('dialog[open]');
+export function systemAlert({ title, body, buttons, onOpen }) {
+  return new Promise(resolve => {
+    const d = document.createElement('dialog');
+    d.className = 'modal sys-alert';
+    const p = Object.assign(document.createElement('p'), { className: 'muted', textContent: body });
+    const row = Object.assign(document.createElement('div'), { className: 'modal-actions' });
+    const finish = value => { if (!d.open) return; d.close(); d.remove(); resolve(value); };
+    for (const b of buttons) {
+      const btn = Object.assign(document.createElement('button'), { type: 'button', className: `btn${b.primary ? ' primary' : ''}${b.faded ? ' faded' : ''}`, textContent: b.label });
+      if (b.escape) btn.dataset.escape = '';
+      btn.addEventListener('click', () => finish(b.value));
+      row.append(btn);
+    }
+    d.append(Object.assign(document.createElement('h2'), { textContent: title }), p, row);
+    d.addEventListener('cancel', e => e.preventDefault()); // Esc won't save you
+    document.body.append(d);
+    d.showModal();
+    onOpen?.({ setBody: t => (p.textContent = t), finish });
+  });
+}
+
+// Run fn when no other dialog is open, retrying every few seconds.
+export function whenIdle(fn) {
+  if (dialogOpen()) return setTimeout(() => whenIdle(fn), 4000);
+  fn();
+}
+
+// ---------- shaking buttons: a random primary button jitters "for attention" ----------
+setInterval(() => {
+  const btns = [...document.querySelectorAll('.btn.primary')].filter(b => b.offsetParent && !b.closest('dialog:not([open])'));
+  const b = btns[Math.floor(Math.random() * btns.length)];
+  if (!b) return;
+  b.classList.remove('jitter');
+  void b.offsetWidth;
+  b.classList.add('jitter');
+}, 7000);

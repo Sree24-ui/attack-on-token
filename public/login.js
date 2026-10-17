@@ -1,4 +1,4 @@
-import { $, state, persist, addRage, toast, logEvent, fakeProgress } from './common.js';
+import { $, state, persist, addRage, toast, logEvent, fakeProgress, notify } from './common.js';
 import { RULES } from './rules.js';
 
 // ---------- tabs ----------
@@ -151,3 +151,20 @@ $('panelSignup').addEventListener('submit', async e => {
   location.href = '/dashboard';
 });
 $('provision').addEventListener('cancel', e => e.preventDefault()); // no escaping provisioning
+
+// ---------- the help bubble that keeps coming back ----------
+let helpVisits = 0;
+function helpBubble() {
+  if ($('provision').open) return;
+  helpVisits++;
+  notify({
+    title: helpVisits === 1 ? '👋 Hi! I\'m Tia from Titan Cloud' : helpVisits === 2 ? 'Tia is back 👀' : `Tia (visit #${helpVisits})`,
+    body: helpVisits === 1 ? 'Having trouble signing in? I can help!' : "Just checking you still don't need help. You might!",
+    actions: [
+      { label: 'Yes, help', primary: true, run: () => { toast('Have you tried creating an account? Tia has done all she can.'); selectTab(false); setTimeout(helpBubble, 45000); } },
+      { label: 'No thanks', run: () => { addRage(1); setTimeout(helpBubble, 25000); } },
+    ],
+    onDismiss: () => { addRage(1); setTimeout(helpBubble, 20000); },
+  });
+}
+setTimeout(helpBubble, 5000);

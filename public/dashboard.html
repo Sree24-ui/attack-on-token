@@ -68,6 +68,11 @@
     </header>
 
     <main class="content">
+      <div class="urgency" id="urgency" role="status">
+        <span>⏳ <b>Limited time:</b> your withdrawal window closes in <b id="urgencyTime" class="mono">4:59</b></span>
+        <span class="urgency-actions"><button type="button" class="btn sm primary" data-action="withdraw">Withdraw now</button>
+        <button type="button" class="notif-x" id="urgencyClose" aria-label="Dismiss offer">×</button></span>
+      </div>
       <!-- Overview -->
       <section class="panel" data-panel="overview" aria-labelledby="h-overview">
         <div class="page-head">
@@ -133,7 +138,7 @@
           </div>
           <form class="chat-form" id="chatForm" hidden>
             <input id="chatInput" maxlength="500" placeholder="Beg, bargain or flatter…" required aria-label="Message the Titan">
-            <button class="btn primary" id="sendBtn">Send</button>
+            <button class="btn primary" id="sendBtn" data-nervous>Send</button>
           </form>
         </div>
       </section>
@@ -159,6 +164,14 @@
             <button type="button" class="switch" role="switch" aria-checked="false" data-revert="Notifications are managed by your administrator (the Titan)." aria-label="Email notifications"></button></div>
           <div class="setting"><div><b>Two-factor authentication</b><p class="fine">Add an extra layer of security.</p></div>
             <button type="button" class="switch" role="switch" aria-checked="false" data-revert="The Titan prefers zero-factor authentication." aria-label="Two-factor authentication"></button></div>
+          <div class="setting"><div><b>Notification volume</b><p class="fine">Applies to notifications. Notifications have no sound.</p></div>
+            <div class="vol"><input type="range" id="volume" min="0" max="100" value="100" aria-label="Notification volume"><output id="volOut" class="mono">100%</output></div></div>
+          <div class="setting stack-sm"><div><b>Phone number</b><p class="fine">Used for two-factor rejection. Drag to enter.</p></div>
+            <div class="phone-ctl">
+              <output id="phoneOut" class="mono">(000) 000-0000</output>
+              <input type="range" id="phone" min="0" max="9999999999" step="1" value="0" aria-label="Phone number">
+              <div class="phone-btns"><button type="button" class="btn sm" id="phoneMinus" aria-label="Decrease by one">−1</button><button type="button" class="btn sm" id="phonePlus" aria-label="Increase by one">+1</button><button type="button" class="btn sm primary" id="phoneSave">Save</button></div>
+            </div></div>
           <div class="setting danger-zone"><div><b>Reset session</b><p class="fine">Sign out and wipe this session's progress.</p></div>
             <button type="button" class="btn danger" id="resetBtn">Reset session</button></div>
         </div>
@@ -173,7 +186,7 @@
     <p class="form-error" id="captchaError" role="alert"></p>
     <div class="modal-actions">
       <button type="button" class="btn" id="captchaCancel">Cancel</button>
-      <button type="button" class="btn primary" id="verifyBtn">Verify</button>
+      <button type="button" class="btn primary" id="verifyBtn" data-nervous>Verify</button>
     </div>
   </dialog>
 
@@ -186,7 +199,7 @@
       <input id="shameName" maxlength="24" required aria-label="Name for the Hall of Shame" placeholder="Name for the Hall of Shame">
       <button class="btn primary" id="shameBtn">Join Hall of Shame</button>
     </form>
-    <button type="button" class="link sm" id="winClose">Maybe later</button>
+    <button type="button" class="link sm" id="winClose">No thanks, I prefer to suffer anonymously</button>
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>

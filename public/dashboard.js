@@ -1,4 +1,4 @@
-import { $, state, persist, addRage, toast, logEvent, clearSession, sleep, fmt, elapsed } from './common.js';
+import { $, state, persist, addRage, toast, logEvent, clearSession, sleep, fmt, elapsed, notify, systemAlert, whenIdle } from './common.js';
 
 if (!state.username) location.replace('/'); // no session: back to the login portal
 
@@ -13,7 +13,19 @@ function showTab(tab) {
   if (tab === 'shame') loadBoard();
   if (tab === 'titan' && !$('chatForm').hidden) $('chatInput').focus();
 }
-document.querySelectorAll('.nav-item').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+// Every 4th sidebar click warns about unsaved changes that don't exist.
+let navClicks = 0;
+document.querySelectorAll('.nav-item').forEach(b => b.addEventListener('click', async () => {
+  if (++navClicks % 4 === 0) {
+    const leave = await systemAlert({
+      title: 'Unsaved changes',
+      body: 'You have unsaved changes on this page. If you leave, they will be lost. (There are no changes.)',
+      buttons: [{ label: 'Stay on page', value: false, primary: true }, { label: 'Leave anyway', value: true, escape: true }],
+    });
+    if (!leave) return addRage(2);
+  }
+  showTab(b.dataset.tab);
+}));
 document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => showTab(b.dataset.goto)));
 
 function closeDrawer() {
@@ -76,11 +88,38 @@ $('markRead').addEventListener('click', e => {
   }, 5000);
 });
 
+let leaving = false;
 function signOut() {
+  leaving = true;
   clearSession();
   location.href = '/';
 }
-$('signOutBtn').addEventListener('click', signOut);
+addEventListener('beforeunload', e => { if (!leaving && !state.won) e.preventDefault(); }); // "Leave site?"
+
+// Roach-motel sign-out: a double-negative, a mandatory survey, then a retention offer.
+async function signOutFlow() {
+  closePopovers();
+  const first = await systemAlert({
+    title: 'Cancel signing out?',
+    body: 'Do you want to cancel signing out? Signing out cancels your place in the withdrawal queue (#48,213).',
+    buttons: [{ label: 'Yes, cancel', value: 'stay', primary: true }, { label: "No, don't cancel", value: 'go', escape: true }],
+  });
+  if (first === 'stay') return addRage(2, 'Sign-out cancelled. You are still signed in. Probably.');
+  const reason = await systemAlert({
+    title: "We're sad to see you go 😢",
+    body: 'Before you leave, please tell us why. This survey is mandatory.',
+    buttons: [{ label: 'Too much rage', value: 'too much rage', escape: true }, { label: 'The Titan was mean', value: 'the Titan was mean' }, { label: 'I just want to leave', value: 'wanting to leave' }],
+  });
+  logEvent(`Exit survey submitted: ${reason}`);
+  const offer = await systemAlert({
+    title: 'Wait! A special offer just for you',
+    body: 'Stay and get Titan Cloud Pro at 100% off: $0/month → $0/month. Includes all the same features.',
+    buttons: [{ label: 'Claim offer and stay', value: 'stay', primary: true }, { label: 'Continue signing out', value: 'go', faded: true, escape: true }],
+  });
+  if (offer === 'stay') return toast('Offer claimed! Nothing has changed.');
+  signOut();
+}
+$('signOutBtn').addEventListener('click', signOutFlow);
 $('resetBtn').addEventListener('click', () => { if (confirm('Reset this session? Your progress and frustration will be lost. (The Titan will remember.)')) signOut(); });
 
 $('upgradeBtn').addEventListener('click', () => addRage(2, 'Upgrading costs one token. You have 0 tokens.'));
@@ -286,5 +325,109 @@ function loadBoard() {
   fetch('/api/leaderboard').then(r => r.json()).then(renderBoard).catch(() => ($('totals').textContent = 'Hall of Shame is offline. Lucky you.'));
 }
 $('refreshBoard').addEventListener('click', loadBoard);
+
+// ---------- continuous popup notifications ----------
+const STREAM = [
+  { title: 'Security alert', body: 'Unusual activity detected: you, using the dashboard.', actions: [{ label: 'Review', run: () => showTab('settings') }] },
+  { title: 'Titan', body: 'Your withdrawal request has been received and pre-denied.', actions: [{ label: 'Appeal', primary: true, run: () => withdraw() }] },
+  { title: 'Quick survey', body: 'How likely are you to recommend Titan Cloud? (0 = extremely likely)', actions: [{ label: '0', run: () => toast('Thanks! Recorded as 10.') }, { label: '10', run: () => toast('Thanks! Recorded as 0.') }] },
+  { title: 'Storage almost full', body: 'Your vault is 100% full (1 of 1 tokens).', actions: [{ label: 'Upgrade', primary: true, run: () => $('upgradeBtn').click() }] },
+  { title: 'Reminder', body: "You haven't withdrawn your token yet. Everyone else has.*", actions: [{ label: 'Withdraw', primary: true, run: () => withdraw() }] },
+  { title: 'Enable desktop notifications?', body: 'Get popups like this one even when the tab is closed!', actions: [{ label: 'Allow', primary: true, run: () => toast('Enabled. (They already were.)') }, { label: 'Block', run: () => addRage(1, 'Blocking failed. Please try again later.') }] },
+  { title: 'New message', body: 'The Titan sent you a message: "lol"', actions: [{ label: 'Reply', run: () => showTab('titan') }] },
+  { title: 'Policy update', body: 'We updated our Cookie Policy. You have already agreed to it.', actions: [{ label: 'OK' }] },
+];
+let streamIdx = 0, dismissals = 0;
+function pushNotification() {
+  const n = STREAM[streamIdx++ % STREAM.length];
+  notify({
+    ...n,
+    onDismiss: () => {
+      addRage(1);
+      if (++dismissals % 3 === 0) notify({
+        title: 'Notification dismissed',
+        body: 'Would you like to be notified when you dismiss notifications?',
+        actions: [{ label: 'Yes', primary: true, run: () => toast('Done. You will be notified.') }, { label: 'No', run: () => toast('Noted. We will notify you about that.') }],
+      });
+    },
+  });
+  $('bellDot').textContent = $('bellDot').hidden ? 1 : Number($('bellDot').textContent) + 1;
+  $('bellDot').hidden = false;
+}
+setTimeout(() => { pushNotification(); setInterval(pushNotification, 18000); }, 6000);
+
+// ---------- blocking alerts: session timeout + newsletter nag ----------
+function sessionTimeout() {
+  whenIdle(async () => {
+    const v = await systemAlert({
+      title: 'Session expiring',
+      body: '',
+      buttons: [{ label: 'Stay signed in', value: 'stay', primary: true, escape: true }, { label: 'Sign out', value: 'out' }],
+      onOpen: ({ setBody, finish }) => {
+        let s = 10;
+        const tick = () => {
+          setBody(`For your security, you will be signed out in ${s} seconds due to inactivity. You are not inactive.`);
+          if (s-- <= 0) { clearInterval(t); finish('timeout'); }
+        };
+        const t = setInterval(tick, 1000);
+        tick();
+      },
+    });
+    if (v === 'out') return signOutFlow();
+    if (v === 'timeout') toast("Session extended automatically. You're welcome.");
+    else addRage(1);
+    setTimeout(sessionTimeout, 120000);
+  });
+}
+setTimeout(sessionTimeout, 45000);
+
+const DECLINES = ["No thanks, I don't like free tokens", 'No, I enjoy missing out', 'No. I am a bad person.'];
+let nags = 0;
+function newsletter() {
+  whenIdle(async () => {
+    const yes = await systemAlert({
+      title: nags === 0 ? 'Join 2 million token holders' : 'Still not subscribed? 🥺',
+      body: 'Get Titan Weekly: 14 emails a day about tokens you cannot withdraw.',
+      buttons: [{ label: 'Subscribe', value: true, primary: true }, { label: DECLINES[nags], value: false, faded: true, escape: true }],
+    });
+    nags++;
+    if (yes) { logEvent('Subscribed to Titan Weekly (14 emails/day)'); return toast('Subscribed! Your first 14 emails are on their way.'); }
+    addRage(2);
+    if (nags < DECLINES.length) setTimeout(newsletter, 60000);
+  });
+}
+setTimeout(newsletter, 25000);
+
+// ---------- fake urgency ----------
+let urgencyLeft = 299;
+$('urgency').hidden = state.won;
+setInterval(() => {
+  if (state.won) return ($('urgency').hidden = true);
+  if (--urgencyLeft < 0) { urgencyLeft = 299; toast('Good news! We extended your withdrawal window. Again.'); }
+  $('urgencyTime').textContent = `${Math.floor(urgencyLeft / 60)}:${String(urgencyLeft % 60).padStart(2, '0')}`;
+}, 1000);
+$('urgencyClose').addEventListener('click', () => {
+  $('urgency').hidden = true;
+  addRage(1);
+  setTimeout(() => { if (!state.won) { $('urgency').hidden = false; toast('The offer is back. Did you miss it?'); } }, 30000);
+});
+
+// ---------- settings: the worst controls ----------
+$('volume').addEventListener('input', () => ($('volOut').textContent = `${$('volume').value}%`));
+$('volume').addEventListener('change', () => {
+  const v = Math.floor(Math.random() * 101);
+  $('volume').value = v;
+  $('volOut').textContent = `${v}%`;
+  addRage(1, `Volume set to ${v}%. Close enough.`);
+});
+const phoneFmt = n => { const s = String(n).padStart(10, '0'); return `(${s.slice(0, 3)}) ${s.slice(3, 6)}-${s.slice(6)}`; };
+const showPhone = () => ($('phoneOut').textContent = phoneFmt($('phone').value));
+$('phone').addEventListener('input', showPhone);
+$('phoneMinus').addEventListener('click', () => { $('phone').stepDown(); showPhone(); });
+$('phonePlus').addEventListener('click', () => { $('phone').stepUp(); showPhone(); });
+$('phoneSave').addEventListener('click', () => {
+  logEvent(`Phone number saved: ${phoneFmt($('phone').value)}`);
+  toast(`Saved ${phoneFmt($('phone').value)}. We'll call at 3 a.m.`);
+});
 
 renderOverview();

@@ -279,6 +279,49 @@ tbody tr:last-child td { border-bottom: 0; }
 }
 .toast.show { transform: translate(-50%, 0); opacity: 1; }
 
+/* ---------- rage pack: popups, alerts, urgency, bad controls, shaking ---------- */
+.notif-stack { position: fixed; top: 16px; right: 16px; z-index: 9; /* under top-bar menus (z 10) */ display: grid; gap: 10px; width: min(340px, calc(100vw - 32px)); }
+.app .notif-stack { top: 76px; } /* below the top bar, so the bell and account menu stay reachable */
+.notif {
+  position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: var(--shadow-lg); padding: 14px 40px 14px 16px; animation: slide-in .35s var(--ease);
+}
+.notif-body b { display: block; margin-bottom: 2px; }
+.notif-body p { color: var(--muted); font-size: 13px; }
+.notif-actions { display: flex; gap: 8px; margin-top: 10px; }
+.notif-x { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border: 0; border-radius: 6px; background: none; color: var(--muted); font-size: 18px; line-height: 1; }
+.notif-x:hover { background: var(--sunken); color: var(--text); }
+@keyframes slide-in { from { opacity: 0; transform: translateX(24px); } }
+
+.sys-alert { width: min(400px, calc(100% - 32px)); }
+.sys-alert h2 { margin-bottom: 8px; }
+.sys-alert .modal-actions { margin-top: 20px; flex-wrap: wrap; }
+.btn.faded { border-color: transparent; box-shadow: none; background: none; color: #98a2b3; font-weight: 400; font-size: 12px; }
+
+.urgency {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+  background: #fffaeb; border: 1px solid #fedf89; color: #93370d; border-radius: var(--radius);
+  padding: 10px 12px 10px 16px; margin-bottom: 24px; font-size: 13px;
+}
+.urgency-actions { display: flex; align-items: center; gap: 4px; }
+.urgency .notif-x { position: static; color: #93370d; }
+
+.vol { display: flex; align-items: center; gap: 12px; }
+.vol output { min-width: 44px; text-align: right; }
+.phone-ctl { display: grid; gap: 8px; justify-items: end; width: min(320px, 100%); }
+.phone-ctl output { font-size: 18px; font-weight: 600; }
+.phone-btns { display: flex; gap: 6px; }
+input[type="range"] { width: 100%; accent-color: var(--primary); padding: 0; border: 0; box-shadow: none; background: none; }
+input[type="range"]:focus { box-shadow: none; }
+
+/* Shaking buttons: `translate` so it stacks with the dodging button's transform. */
+.btn.jitter { animation: jitter .6s; }
+.btn[data-nervous]:hover:not(:disabled) { animation: jitter .25s infinite; }
+@keyframes jitter {
+  0%, 100% { translate: 0 0; }
+  20% { translate: -3px 1px; } 40% { translate: 3px -1px; } 60% { translate: -2px -1px; } 80% { translate: 2px 1px; }
+}
+
 /* ---------- responsive ---------- */
 @media (max-width: 1100px) {
   .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -300,6 +343,10 @@ tbody tr:last-child td { border-bottom: 0; }
   .consent-actions { justify-content: space-between; }
   th, td { padding: 12px; }
   .msg { max-width: 90%; }
+  .setting.stack-sm { flex-direction: column; align-items: stretch; }
+  .phone-ctl { justify-items: stretch; width: 100%; }
+  .notif-stack { top: auto; bottom: 16px; }
+  .content { padding-bottom: 180px; } /* room to scroll past the popup */
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
